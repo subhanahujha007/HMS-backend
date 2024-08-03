@@ -100,3 +100,15 @@ export const login = async (req, res) => {
       
     }
   };
+  export const logout = (req, res) => {
+    try {
+      res
+        .status(200)
+        .clearCookie('accessToken') // Clear the accessToken cookie
+        .clearCookie('refreshToken') // Clear the refreshToken cookie
+        .send({ message: 'Logged out successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
+    }
+  };
+  
