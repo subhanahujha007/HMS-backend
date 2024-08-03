@@ -1,10 +1,7 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose'
 
 const bedSchema = new mongoose.Schema({
-  roomNumber: {
-    type: Number,
-    required: true,
-  },
+  
   bedNumber: {
     type: Number,
     required: true,
@@ -19,8 +16,12 @@ const bedSchema = new mongoose.Schema({
     enum: ['available', 'occupied'],
     default: 'available',
   },
+  roomNumber:{
+    type: Number,
+    required: true,
+  },
   admin: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin', required: true },
 });
 
 const Bed = mongoose.model('Bed', bedSchema);
-module.exports = Bed;
+export default Bed;

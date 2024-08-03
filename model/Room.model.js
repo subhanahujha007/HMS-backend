@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const roomSchema = new mongoose.Schema({
   roomNumber: {
@@ -9,17 +9,21 @@ const roomSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  roomType: {
-    type: String,
-    enum: ['single', 'double', 'suite'],
-    required: true,
-  },
   beds: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Bed',
   }],
-  admin: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin', required: true },
+  admin: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Admin',
+    required: true,
+  },
+  isOperational: {
+    type: String,
+    enum: ['operational', 'non-operational'],
+    default: 'non-operational',
+  },
 });
 
 const Room = mongoose.model('Room', roomSchema);
-module.exports = Room;
+export default Room;
