@@ -45,7 +45,8 @@ export const createBed = asyncHandler(async (req, res) => {
         admin
       });
       await newBed.save();
-  
+      matchingRoom.beds.push(newBed._id);
+      await matchingRoom.save();
       res.status(201).json({ message: 'Bed created successfully', bed: newBed });
     } catch (error) {
       console.error('Error creating bed:', error);
@@ -85,28 +86,30 @@ export const getBedById = asyncHandler(async (req, res) => {
 
 // Update bed
 export const updateBed = asyncHandler(async (req, res) => {
-  try {
-    const bedId = req.params.id;
-    const { bedNumber, roomNumber, isOperational } = req.body;
-
-    const bed = await Bed.findById(bedId);
-
-    if (!bed) {
-      return res.status(404).json({ message: 'Bed not found' });
+    try {
+      const id = req.params.id;
+      const { bedNumber, roomNumber, floorNumber, status } = req.body;
+  
+      const bed = await Bed.findById(id);
+  
+      if (!bed) {
+        return res.status(404).json({ message: 'Bed not found' });
+      }
+  
+      bed.bedNumber = bedNumber || bed.bedNumber;
+      bed.roomNumber = roomNumber || bed.roomNumber;
+      bed.floorNumber = floorNumber || bed.floorNumber;
+      bed.status = status || bed.status;
+  
+      await bed.save();
+  
+      res.status(200).json({ message: 'Bed updated successfully', bed });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server error', error });
     }
-
-    bed.bedNumber = bedNumber || bed.bedNumber;
-    bed.roomNumber = roomNumber || bed.roomNumber;
-    bed.isOperational = isOperational !== undefined ? isOperational : bed.isOperational;
-
-    await bed.save();
-
-    res.status(200).json({ message: 'Bed updated successfully', bed });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error', error });
-  }
-});
+  });
+  
 
 // Delete bed
 export const deleteBed = asyncHandler(async (req, res) => {

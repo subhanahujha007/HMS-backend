@@ -1,7 +1,7 @@
 
 import Room from "../model/Room.model.js";
 import { asyncHandler } from "../utils/Asynchandler.js";
-
+import Bed from "../model/Bed.model.js";
 export const createRoom = asyncHandler(async (req, res) => {
     try {
       const { roomNumber, floorNumber, isOperational } = req.body; // Extract isOperational from the request body
@@ -79,20 +79,31 @@ export const updateRoom = asyncHandler(async (req, res) => {
     }
   });
   
-  export const deleteroom = asyncHandler(async (req, res) => {
+  export const deleteRoom = asyncHandler(async (req, res) => {
     try {
-      const roomid = req.params.id;
-      
-      // Find and delete the bed
-      const room = await Room.findByIdAndDelete(roomid);
-  console.log(room)
-      if (!room) {
-        return res.status(404).json({ message: 'room not found' });
+      // Extract the room ID from the request parameters
+      const { id } = req.params;
+  
+      if (!id) {
+        return res.status(400).json({ message: 'Room ID is required' });
       }
   
-      res.status(200).json({ message: 'room deleted successfully' });
+      // Find the room to delete
+      const room = await Room.findById(id);
+  
+      if (!room) {
+        return res.status(404).json({ message: 'Room not found' });
+      }
+  
+      // Find and delete all beds associated with the room
+      await Bed.deleteMany({ room: id });
+  
+      // Remove the room
+      await Room.findByIdAndDelete(id); // Corrected this line
+  
+      res.status(200).json({ message: 'Room and associated beds deleted successfully' });
     } catch (error) {
-      console.error(error);
+      console.error('Delete room error:', error);
       res.status(500).json({ message: 'Server error', error });
     }
   });

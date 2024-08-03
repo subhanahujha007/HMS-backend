@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-
+import Bed from './Bed.model.js';
 const roomSchema = new mongoose.Schema({
   roomNumber: {
     type: Number,
@@ -23,6 +23,15 @@ const roomSchema = new mongoose.Schema({
     enum: ['operational', 'non-operational'],
     default: 'non-operational',
   },
+});
+roomSchema.pre('remove', async function(next) {
+  try {
+    // Remove all beds associated with this room
+    await Bed.deleteMany({ room: this._id });
+    next();
+  } catch (error) {
+    next(error);
+  }
 });
 
 const Room = mongoose.model('Room', roomSchema);

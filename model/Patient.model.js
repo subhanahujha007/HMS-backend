@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');
-
+import mongoose from "mongoose";
 const patientSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -14,10 +13,23 @@ const patientSchema = new mongoose.Schema({
     enum: ['male', 'female', 'other'],
     required: true,
   },
+  status:{
+type: String,
+enum:['admitted','discharged'],
+default:'admitted'
+  },
   bed: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Bed',
     required: true,
+  },
+  disease:{
+type:String,
+required:true
+  },
+  floorno:{
+    type:Number,
+    required:true
   },
   admissionDate: {
     type: Date,
@@ -28,4 +40,4 @@ const patientSchema = new mongoose.Schema({
 });
 
 const Patient = mongoose.model('Patient', patientSchema);
-module.exports = Patient;
+export default Patient;

@@ -22,8 +22,10 @@ connectDB()
 import authRoutes from './routes/Authroutes.js';
 import roomroutes from './routes/Roomroutes.js'
 import { verifyJWT } from './middleware/verify-jwt.js';
+import  patientroute from "./routes/patientroute.js"
 import bedRoutes from "./routes/Bedroutes.js"
 app.use('/api/auth', authRoutes);
 
 app.use('/api/rooms',verifyJWT , roomroutes);
 app.use('/api/beds', verifyJWT, bedRoutes); 
+app.use('/api/patient',verifyJWT,patientroute)
