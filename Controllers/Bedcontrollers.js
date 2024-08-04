@@ -2,58 +2,67 @@ import { asyncHandler } from "../utils/Asynchandler.js";
 import Room from "../model/Room.model.js";
 import Bed from "../model/Bed.model.js";
 
-
 export const createBed = asyncHandler(async (req, res) => {
-    try {
-      const { bedNumber, roomNumber, status, floorNumber } = req.body; // Ensure this matches the request payload
-      const admin = req.admin;
-  
-      // Ensure floorNumber and roomNumber are integers
-      const parsedFloorNumber = parseInt(floorNumber, 10);
-      const parsedRoomNumber = parseInt(roomNumber, 10);
-  
-      if (isNaN(parsedFloorNumber) || isNaN(parsedRoomNumber)) {
-        return res.status(400).json({ message: 'Invalid floor number or room number' });
-      }
-  
-      // Find all rooms with the given roomNumber
-      const rooms = await Room.find({ roomNumber: parsedRoomNumber });
-  
-      console.log("Retrieved rooms:", rooms); // Log retrieved rooms for debugging
-  
-      if (rooms.length === 0) {
-        return res.status(404).json({ message: 'No rooms with the specified room number exist' });
-      }
-  
-      // Check if any room has the matching floorNumber
-      const matchingRoom = rooms.find(room => room.floorNumber === parsedFloorNumber);
-  
-      if (!matchingRoom) {
-        return res.status(404).json({ message: 'No room with the specified floor number exists' });
-      }
-      if(matchingRoom.isOperational!=='operational'){
-        return res.status(404).json({message:"this room is non-oprational"})
-      }
-  
-      // Create and save the bed
-      const newBed = new Bed({
-        bedNumber,
-        room: matchingRoom._id,
-        floorNumber: parsedFloorNumber,
-        status,
-        roomNumber:roomNumber,
-        admin
-      });
-      await newBed.save();
-      matchingRoom.beds.push(newBed._id);
-      await matchingRoom.save();
-      res.status(201).json({ message: 'Bed created successfully', bed: newBed });
-    } catch (error) {
-      console.error('Error creating bed:', error);
-      res.status(500).json({ message: 'Server error', error });
+  try {
+    const { bedNumber, roomNumber, status, floorNumber } = req.body; // Ensure this matches the request payload
+    const admin = req.admin;
+
+    // Ensure floorNumber and roomNumber are integers
+    const parsedFloorNumber = parseInt(floorNumber, 10);
+    const parsedRoomNumber = parseInt(roomNumber, 10);
+
+    if (isNaN(parsedFloorNumber) || isNaN(parsedRoomNumber)) {
+      return res.status(400).json({ message: 'Invalid floor number or room number' });
     }
-  });
-  
+
+    // Find all rooms with the given roomNumber
+    const rooms = await Room.find({ roomNumber: parsedRoomNumber });
+
+    console.log("Retrieved rooms:", rooms); // Log retrieved rooms for debugging
+
+    if (rooms.length === 0) {
+      return res.status(404).json({ message: 'No rooms with the specified room number exist' });
+    }
+
+    // Check if any room has the matching floorNumber
+    const matchingRoom = rooms.find(room => room.floorNumber === parsedFloorNumber);
+
+    if (!matchingRoom) {
+      return res.status(404).json({ message: 'No room with the specified floor number exists' });
+    }
+
+    if (matchingRoom.isOperational !== 'operational') {
+      return res.status(404).json({ message: 'This room is non-operational' });
+    }
+
+    // Check for existing bed with the same bedNumber and room
+    const existingBed = await Bed.findOne({ bedNumber, room: matchingRoom._id });
+
+    if (existingBed) {
+      return res.status(400).json({ message: 'A bed with this number already exists in the specified room' });
+    }
+
+    // Create and save the bed
+    const newBed = new Bed({
+      bedNumber,
+      room: matchingRoom._id,
+      floorNumber: parsedFloorNumber,
+      status,
+      roomNumber,
+      admin
+    });
+
+    await newBed.save();
+    matchingRoom.beds.push(newBed._id);
+    await matchingRoom.save();
+
+    res.status(201).json({ message: 'Bed created successfully', bed: newBed });
+  } catch (error) {
+    console.error('Error creating bed:', error);
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
   
   
 
